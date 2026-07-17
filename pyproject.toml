@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nimolm"
+version = "0.1.0"
+description = "NimoLM library"
+authors = [
+    {name = "Yehezkiel"}
+]
+dependencies = [
+    "torch>=2.5",
+    "transformers>=4.55"
+]
