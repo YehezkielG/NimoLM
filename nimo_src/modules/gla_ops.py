@@ -156,8 +156,8 @@ def chunk_gla(
 
     # Intra-chunk attention
     # A_ij = sum_k (q_ik * exp(gcum_ik)) * (k_jk * exp(-gcum_jk))
-    q_decay = q * gk_cumsum.exp()       # [B, H, NC, C, K]
-    k_decay = k * (-gk_cumsum).exp()     # [B, H, NC, C, K]
+    q_decay = q * torch.exp(torch.clamp(gk_cumsum, max=85.0))       
+    k_decay = k * torch.exp(torch.clamp(-gk_cumsum, max=85.0))
 
     attn = torch.matmul(q_decay, k_decay.transpose(-1, -2))
 
@@ -172,7 +172,8 @@ def chunk_gla(
     # Inter-chunk state propagation
     gk_total = gk_cumsum[:, :, :, -1, :]  # [B, H, NC, K]
 
-    decay_within = (gk_total.unsqueeze(3) - gk_cumsum).exp()
+    decay_diff = gk_total.unsqueeze(3) - gk_cumsum
+    decay_within = torch.exp(torch.clamp(decay_diff, max=85.0))
     k_weighted = k * decay_within
 
     chunk_kv = torch.matmul(
